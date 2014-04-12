@@ -3,6 +3,8 @@ require 'nokogiri'
 module Nokogiri
   module Streaming
 
+    class ParseError < StandardError; end
+
     class Reader < XML::SAX::Document
 
       def initialize(source)
@@ -31,6 +33,10 @@ module Nokogiri
       #
       # The following methods are SAX callbacks from Nokogiri.
       #
+
+      def error(message)
+        raise ParseError.new(message)
+      end
 
       def end_document
       end
