@@ -45,7 +45,7 @@ describe Nokogiri::Streaming::Reader do
     reader = subject.new(doc)
     reader.on('/root') do |e|
       expect(e.children.length).to eq 1
-      expect(e.children.first.cdata?).to be_true
+      expect(e.children.first.cdata?).to be true
     end
     reader.run
   end
@@ -58,8 +58,8 @@ describe Nokogiri::Streaming::Reader do
     reader = subject.new(doc)
     reader.on('/root') do |e|
       expect(e.children.length).to eq 1
-      expect(e.children.first.text?).to be_true
-      expect(e.children.first.cdata?).to be_false
+      expect(e.children.first.text?).to be true
+      expect(e.children.first.cdata?).to be false
     end
     reader.run
   end
