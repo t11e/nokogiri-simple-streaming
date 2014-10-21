@@ -86,7 +86,9 @@ module Nokogiri
       end
 
       def cdata_block(string)
-        characters(string)
+        if @current
+          @current.add_child(@current.document.create_cdata(string))
+        end
       end
 
     end

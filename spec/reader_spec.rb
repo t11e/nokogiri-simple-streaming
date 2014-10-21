@@ -37,4 +37,31 @@ describe Nokogiri::Streaming::Reader do
     expect(meats).to eq ["<type>beef</type>"]
   end
 
+  it 'preserves CDATA nodes' do
+    doc = %{
+      <root><![CDATA[banana]]></root>
+    }
+
+    reader = subject.new(doc)
+    reader.on('/root') do |e|
+      expect(e.children.length).to eq 1
+      expect(e.children.first.cdata?).to be_true
+    end
+    reader.run
+  end
+
+  it 'preserves text nodes' do
+    doc = %{
+      <root>banana</root>
+    }
+
+    reader = subject.new(doc)
+    reader.on('/root') do |e|
+      expect(e.children.length).to eq 1
+      expect(e.children.first.text?).to be_true
+      expect(e.children.first.cdata?).to be_false
+    end
+    reader.run
+  end
+
 end
