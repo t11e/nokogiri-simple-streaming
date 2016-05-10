@@ -3,12 +3,35 @@ require 'nokogiri'
 module Nokogiri
   module Streaming
 
+    # IO wrapper which traps stream exceptions. This works around bug in Nokogiri's
+    # SAX code, which seems to ignore exceptions entirely.
+    class IOWrapper
+      def initialize(source)
+        @source = source
+      end
+
+      def read(length = nil)
+        begin
+          return @source.read(length)
+        rescue => e
+          @exception = e
+          raise
+        end
+      end
+
+      def close
+        @stream.close
+      end
+
+      attr_reader :exception
+    end
+
     class ParseError < StandardError; end
 
     class Reader < XML::SAX::Document
 
       def initialize(source)
-        @source = source
+        @source = IOWrapper.new(source)
         @parser = Nokogiri::XML::SAX::Parser.new(self)
         @stack = []
         @triggers = {}
@@ -35,6 +58,9 @@ module Nokogiri
       #
 
       def error(message)
+        if @source.exception
+          raise @source.exception
+        end
         raise ParseError.new(message)
       end
 
