@@ -7,7 +7,7 @@ describe Nokogiri::Streaming::Reader do
   end
 
   it 'parses registered paths' do
-    doc = %{
+    doc = StringIO.new %{
       <root>
         <fruit/>
         <fruit/>
@@ -38,7 +38,7 @@ describe Nokogiri::Streaming::Reader do
   end
 
   it 'preserves CDATA nodes' do
-    doc = %{
+    doc = StringIO.new %{
       <root><![CDATA[banana]]></root>
     }
 
@@ -51,7 +51,7 @@ describe Nokogiri::Streaming::Reader do
   end
 
   it 'preserves text nodes' do
-    doc = %{
+    doc = StringIO.new %{
       <root>banana</root>
     }
 
