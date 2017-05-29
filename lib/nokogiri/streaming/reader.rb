@@ -34,7 +34,8 @@ module Nokogiri
         @source = IOWrapper.new(source)
         @parser = Nokogiri::XML::SAX::Parser.new(self)
         @stack = []
-        @triggers = {}
+        @end_triggers = {}
+        @start_triggers = {}
       end
 
       def run
@@ -42,7 +43,11 @@ module Nokogiri
       end
 
       def on(path, &block)
-        (@triggers[path] ||= []).push(block)
+        (@end_triggers[path] ||= []).push(block)
+      end
+
+      def on_start(path, &block)
+        (@start_triggers[path] ||= []).push(block)
       end
 
       def current_path
@@ -70,19 +75,27 @@ module Nokogiri
       def start_element(name, attrs = [])
         if @current
           element = @current.document.create_element(name)
-          attrs.each do |name, value|
-            element[name] = value
+          attrs.each do |attrname, value|
+            element[attrname] = value
           end
           @current.add_child(element)
           @current = element
-        elsif @triggers[current_path + '/' + name]
+        elsif @end_triggers.include?(current_path + '/' + name)
           fragment = Nokogiri::XML::DocumentFragment.new(Nokogiri::XML::Document.new)
-
           element = fragment.document.create_element(name)
-          attrs.each do |name, value|
-            element[name] = value
+          attrs.each do |attrname, value|
+            element[attrname] = value
           end
           @current = element
+        elsif (triggers = @start_triggers[current_path + '/' + name])
+          fragment = Nokogiri::XML::DocumentFragment.new(Nokogiri::XML::Document.new)
+          element = fragment.document.create_element(name)
+          attrs.each do |attrname, value|
+            element[attrname] = value
+          end
+          triggers.each do |proc|
+            proc.call(element)
+          end
         end
         @stack.push(name)
       end
@@ -97,8 +110,7 @@ module Nokogiri
           @current = @current.parent
         end
 
-        triggers = @triggers[path]
-        if triggers
+        if (triggers = @end_triggers[path])
           triggers.each do |proc|
             proc.call(element)
           end
