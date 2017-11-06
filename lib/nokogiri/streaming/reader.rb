@@ -30,9 +30,9 @@ module Nokogiri
 
     class Reader < XML::SAX::Document
 
-      def initialize(source)
+      def initialize(source, encoding: 'utf-8')
         @source = IOWrapper.new(source)
-        @parser = Nokogiri::XML::SAX::Parser.new(self)
+        @parser = Nokogiri::XML::SAX::Parser.new(self, encoding)
         @stack = []
         @end_triggers = {}
         @start_triggers = {}
